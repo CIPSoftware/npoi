@@ -273,7 +273,7 @@ namespace NPOI.SS.Util
          * @param useMergedCells    whether to use merged cells
          * @return  the width in pixels
          */
-        public static double GetCellWidth(ICell cell, int defaultCharWidth, DataFormatter formatter, bool useMergedCells)
+        public static double GetCellWidth(ICell cell, int defaultCharWidth, DataFormatter formatter, bool useMergedCells, Bitmap bmp)
         {
             ISheet sheet = cell.Sheet;
             IWorkbook wb = sheet.Workbook;
@@ -309,7 +309,6 @@ namespace NPOI.SS.Util
             //TextLayout layout;
 
             double width = -1;
-            using (Bitmap bmp = new Bitmap(2048, 100))
             using (Graphics g = Graphics.FromImage(bmp))
             {
                 if (cellType == CellType.String)
@@ -458,17 +457,21 @@ namespace NPOI.SS.Util
             //DummyEvaluator dummyEvaluator = new DummyEvaluator();
 
             double width = -1;
-            foreach (IRow row in sheet)
+
+            using (Bitmap bmp = new Bitmap(2048, 100))
             {
-                ICell cell = row.GetCell(column);
-
-                if (cell == null)
+                foreach (IRow row in sheet)
                 {
-                    continue;
-                }
+                    ICell cell = row.GetCell(column);
 
-                double cellWidth = GetCellWidth(cell, defaultCharWidth, formatter, useMergedCells);
-                width = Math.Max(width, cellWidth);
+                    if (cell == null)
+                    {
+                        continue;
+                    }
+              
+                    double cellWidth = GetCellWidth(cell, defaultCharWidth, formatter, useMergedCells, bmp);
+                    width = Math.Max(width, cellWidth);
+                }
             }
             return width;
         }
@@ -499,21 +502,24 @@ namespace NPOI.SS.Util
             int defaultCharWidth = TextRenderer.MeasureText("" + new String(defaultChar, 1), font).Width;
 
             double width = -1;
-            for (int rowIdx = firstRow; rowIdx <= lastRow; ++rowIdx)
+            using (Bitmap bmp = new Bitmap(2048, 100))
             {
-                IRow row = sheet.GetRow(rowIdx);
-                if (row != null)
+                for (int rowIdx = firstRow; rowIdx <= lastRow; ++rowIdx)
                 {
-
-                    ICell cell = row.GetCell(column);
-
-                    if (cell == null)
+                    IRow row = sheet.GetRow(rowIdx);
+                    if (row != null)
                     {
-                        continue;
-                    }
 
-                    double cellWidth = GetCellWidth(cell, defaultCharWidth, formatter, useMergedCells);
-                    width = Math.Max(width, cellWidth);
+                        ICell cell = row.GetCell(column);
+
+                        if (cell == null)
+                        {
+                            continue;
+                        }
+
+                        double cellWidth = GetCellWidth(cell, defaultCharWidth, formatter, useMergedCells, bmp);
+                        width = Math.Max(width, cellWidth);
+                    }
                 }
             }
             return width;
